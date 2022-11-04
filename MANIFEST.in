@@ -1,0 +1,8 @@
+include AUTHORS
+include LICENSE
+include DESCRIPTION
+include CHANGELOG.txt
+include README.md
+graft fabric_bnzk
+global-exclude __pycache__
+global-exclude *.orig *.pyc *.log *.swp

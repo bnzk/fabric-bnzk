@@ -1,0 +1,6 @@
+=== (ongoing) ===
+
+
+=== 0.1.0 (2022-11-04) ==
+- initial release
+- support for deploy on nine.ch VServers and djangoeurope.com
