@@ -1,6 +1,8 @@
 # fabric tasks for typical bnzk deployments
 
-Using fabric ([fab-classic](https://github.com/ploxiln/fab-classic)) and ansible-vault (for encryption of .env files)
+Using fabric ([fab-classic](https://github.com/ploxiln/fab-classic)) and ansible-vault (for encryption of .env files).
+Works best with [bnzk/django-layout](https://github.com/bnzk/django-layout) - this repos contains many of the
+expected files (nginx configs, supervisord, init files, etc) that are needed for deployment.
 
 There are mainly two hosting providers covered:
 
@@ -34,6 +36,8 @@ env.roledefs = {  # deprecated but required for now. future versions will only s
     'db': [server],
 }
 
+env.build_put_webpack = True  # default: True. build and put the frontend assets during deploy? not needed if you
+  # have your assets in version control, or if your assets are built within django/libsass/etc.
 env.is_python3 = True  # default: True. legacy setting ;-)
 env.sites = ('{{ project_name }}', 'another_site', )  # default: (env.project_name, ). django sites
   # (from sites framework) to be run
@@ -73,6 +77,7 @@ env.nginx_restart_command = '~/init/nginx.sh restart'  # optional
 Once setup, you can use the built in tasks. For example:
 
 ```bash
+$ fab show # (instead of "show", enter any other not existing task) to get a list of available commands
 $ fab bootstrap  # bootstrap on remote server: clone_repos, create_virtualenv and install libs, create_db, 
   # copy nginx initial files 
 $ fab deploy  # deploy: update, collectstatic, migrate, deploy crontab, restart

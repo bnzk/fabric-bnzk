@@ -173,18 +173,6 @@ def disable_django():
 
 
 
-
-
-def copy_restart_uwsgi():
-    for site in env.sites:
-        run(
-            'cp {project_dir}/deployment/uwsgi/{site}-{env_prefix}.ini'
-            ' $HOME/uwsgi.d/.'.format(site=site, **env)
-        )
-        # cp does the touch already!
-        # run(env.uwsgi_restart_command.format(site=site, **env))
-
-
 @task
 @roles('web', 'db')
 def requirements():
@@ -196,135 +184,44 @@ def requirements():
     virtualenv('pip install -r {project_dir}/{requirements_file}'.format(**env))
 
 
-@task
-@roles('web')
-def get_version():
-    """
-    Get installed version from each server.
-    """
-    with cd(env.project_dir):
-        run('git describe --tags')
-        run('git log --graph --pretty=oneline -n20')
-
 
 @task
 @roles('web')
-def get_media():
+def build_put_webpack():
     """
-    get media files. path by convention, adapt if needed.
+    build webpack, put on server!
+    env attributes:
+    - webpack_build_command, defaults to yarn build
+    - webpack_bundle_path, defaults to 'apps/{project_name}/static/{project_name}/bundle'
     """
-    # trivial version
-    # get(os.path.join(env.project_dir, 'public', 'media'), 'public/media')
-    if getattr(env, 'custom_media_root', None):
-        remote_dir = env.custom_media_root
-        if remote_dir[-1] == '/':
-            # cannot end with a slash! rsync is not working!
-            remote_dir = remote_dir[0:-1]
-    else:
-        remote_dir = os.path.join(env.project_dir, 'public', 'media', )
-    local_dir = os.path.join('public')
-    extra_opts = ""
-    # extra_opts = "--dry-run"
-    rsync_project(
-        remote_dir=remote_dir,
-        local_dir=local_dir,
-        upload=False,
-        delete=True,
-        extra_opts=extra_opts,
-    )
+    local_branch = local('git branch --show-current')
+    if not env.remote_ref.endswith(local_branch):
+        yes_no = confirm("Configured remote_ref for {} is {}, but you are on branch {}. Continue anyway (y/N)?", default=False)
+        if not yes_no:
+            exit(0)
+    local(env.get('webpack_build_command', 'yarn build'))
+    base_static_path = 'apps/{project_name}/static/{project_name}/bundle'.format(**env)
+    base_static_path = env.get('webpack_bundle_path', base_static_path)
+    local_path = base_static_path + '/*'
+    remote_path = '{}/{}'.format(env.project_dir, base_static_path)
+    run('mkdir --parents {}'.format(remote_path))
+    put(local_path=local_path, remote_path=remote_path)
 
 
 @task
-@roles('web')
-def put_media():
+def put_env_file():
     """
-    put media files. path by convention, adapt if needed.
+    put the ansible-vault encrypted env file, with ansible, so it will be decrypted
     """
-    yes_no1 = confirm(
-        "Will overwrite your remote media files! Continue?",
-        default=False,
-    )
-    if not yes_no1:
-        return
-    yes_no2 = confirm("Are you sure?", default=False)
-    if not yes_no2:
-        return
-
-    # go for it!
-    if getattr(env, 'custom_media_root', None):
-        cust = env.custom_media_root
-        remote_dir, to_remove = os.path.split(env.custom_media_root)
-        if not to_remove:
-            # custom media root ended with a slash - let's do it again!
-            remote_dir, to_remove = os.path.split(cust)
-    else:
-        remote_dir = os.path.join(env.project_dir, 'public', )
-    local_dir = os.path.join('public', 'media')
-    extra_opts = ""
-    # extra_opts = "--dry-run"
-    rsync_project(
-        remote_dir=remote_dir,
-        local_dir=local_dir,
-        upload=True,
-        delete=True,
-        extra_opts=extra_opts,
-    )
-
-
-# ==============================================================================
-# Helper functions
-# ==============================================================================
-
-def virtualenv(command):
-    """
-    Run a command in the virtualenv. This prefixes the command with the source
-    command.
-    Usage:
-        virtualenv('pip install django')
-    """
-    source = 'source {virtualenv_dir}/bin/activate && '.format(**env)
-    run(source + command)
-
-
-@task
-@roles('web')
-def dj(command):
-    """
-    Run a Django manage.py command on the server.
-    """
-    cmd_prefix = 'cd {project_dir}'.format(**env)
-    if getattr(env, 'custom_manage_py_root', None):
-        cmd_prefix = 'cd {}'.format(env.custom_manage_py_root)
-    virtualenv(
-        '{cmd_prefix} && export DJANGO_SETTINGS_MODULE={project_conf} && ./manage.py {dj_command}'.format(
-            dj_command=command,
-            cmd_prefix=cmd_prefix,
-            **env
-        )
-    )
-
-
-@task
-@roles('web')
-def shell(command):
-    """
-    Run an arbitrary command on the server.
-    """
-    run(command)
-
-
-@task
-@roles('web')
-def memory():
-    """
-    Run an arbitrary command on the server.
-    """
-    run("ps -U %s --no-headers -o rss | awk '{ sum+=$1} END {print int(sum/1024) \"MB\"}'" % (env.main_user))
-
-
-def fix_permissions(path='.'):
-    """
-    Fix the file permissions. what a hack.
-    """
-    puts("no need for fixing permissions yet!")
-    return
+    if getattr(env, 'env_file', None):
+        values = {
+            'server': env.roledefs['web'][0],
+            'locale_path': env.env_file,
+            'remote_path': os.path.join(env.project_dir, '.env'),
+            'user': env.main_user,
+        }
+        local('ansible {server} --inventory {server}, '
+              '--module-name ansible.builtin.copy '
+              '--user {user} '
+              '--args "src={locale_path} dest={remote_path}"'
+              ''.format(**values))
