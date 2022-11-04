@@ -1,3 +1,5 @@
+from nginx import create_nginx_folders
+from supervisor import create_supervisor_folders
 from .database import create_db
 
 
@@ -51,25 +53,3 @@ def clone_repos():
     run('git clone {repository} {project_dir}'.format(**env))
     puts('cloned {repository} to {project_dir}.'.format(**env))
 
-
-@task
-@roles('web', 'db')
-def create_nginx_folders():
-    """
-    do it.
-    """
-    if getattr(env, 'needs_main_nginx_files', None):
-        with hide('running', 'stdout'):
-            exists = run('if [ -d "~/nginx" ]; then echo 1; fi')
-        if exists:
-            puts('nginx dir already exists. manual action needed, if really...')
-            return
-        run('mkdir ~/nginx')
-        run('mkdir ~/nginx/conf')
-        run('mkdir ~/nginx/conf/sites')
-        run('mkdir ~/nginx/temp')
-        run('mkdir ~/nginx/logs')
-        run('mkdir ~/nginx/logs/archive')
-        puts('created ~/nginx & co.'.format(**env))
-    else:
-        puts('no nginx files created, check "needs_main_nginx_files" in env.')
