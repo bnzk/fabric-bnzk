@@ -1,3 +1,10 @@
+import datetime
+import os
+
+from fabric.api import task, run, settings, roles, hide, env
+from fabric.contrib.console import confirm
+from fabric.operations import get, local, put
+from fabric.utils import puts
 
 
 @task
@@ -95,10 +102,17 @@ def dj(command):
     cmd_prefix = 'cd {project_dir}'.format(**env)
     if getattr(env, 'custom_manage_py_root', None):
         cmd_prefix = 'cd {}'.format(env.custom_manage_py_root)
+    source_env_prefix = ''
+    if getattr(env, 'source_env', False) and getattr(env, 'env_file', None):
+        file = '.env'
+        if env.get('remote_env_file', None):
+            file = env.get('remote_env_file')
+        source_env_prefix = ' && source {}'.format(file)
     virtualenv(
-        '{cmd_prefix} && export DJANGO_SETTINGS_MODULE={project_conf} && ./manage.py {dj_command}'.format(
+        '{cmd_prefix} {source_env_prefix} && export DJANGO_SETTINGS_MODULE={project_conf} && ./manage.py {dj_command}'.format(
             dj_command=command,
             cmd_prefix=cmd_prefix,
+            source_env_prefix=source_env_prefix,
             **env
         )
     )

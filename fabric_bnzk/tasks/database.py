@@ -1,6 +1,7 @@
 import datetime
 import os
 
+import environ
 from fabric.api import task, run, settings, roles, hide, env
 from fabric.contrib.console import confirm
 from fabric.operations import get, local, put
@@ -75,21 +76,7 @@ def put_db(local_db_name=False, from_file=None):
 
 def _get_mysql_options_name_prompts():
     options = ''
-    if env.env_file:
-        load_remote_env_vars()
-        host = os.environ.get('DB_HOST', '')
-        port = os.environ.get('DB_PORT', '')
-        name = os.environ.get('DB_NAME', '')
-        user = os.environ.get('DB_USER', '')
-        password = os.environ.get('DB_PASSWORD', '')
-    else:
-        django_settings = get_settings()
-        remote_db_settings = django_settings.DATABASES.get('default', None)
-        host = remote_db_settings.get('HOST', '')
-        port = remote_db_settings.get('PORT', '')
-        name = remote_db_settings.get('NAME', '')
-        user = remote_db_settings.get('USER', '')
-        password = remote_db_settings.get('PASSWORD', '')
+    host, port, name, user, password = _get_db_credentials()
     prompts = {}
     if host:
         options += ' --host={}'.format(host)
@@ -200,20 +187,7 @@ def create_mycnf(force=False):
 
 def _get_postgres_options_name_prompts():
     options = ''
-    if env.env_file:
-        load_remote_env_vars()
-        host = os.environ.get('DB_HOST', '')
-        port = os.environ.get('DB_PORT', '')
-        name = os.environ.get('DB_NAME', '')
-        user = os.environ.get('DB_USER', '')
-        password = os.environ.get('DB_PASSWORD', '')
-    else:
-        django_settings = get_settings()
-        remote_db_settings = django_settings.DATABASES.get('default', None)
-        host = remote_db_settings.get('HOST', '')
-        port = remote_db_settings.get('PORT', '')
-        user = remote_db_settings.get('USER', '')
-        password = remote_db_settings.get('PASSWORD', '')
+    host, port, name, user, password = _get_db_credentials()
     prompts = {}
     if host:
         options += ' --host={}'.format(host)
@@ -307,3 +281,28 @@ def _get_remote_db_name():
             remote_db_settings = django_settings.DATABASES.get('default', None)
             remote_db_name = remote_db_settings.get('NAME', '')
     return remote_db_name
+
+
+def _get_db_credentials():
+    if env.env_file:
+        load_remote_env_vars()
+        to_get_from = os.environ
+        get_prefix = 'DB_'
+        if os.environ.get('DATABASE_URL', ''):
+            get_prefix = ''
+            e = environ.Env()
+            to_get_from = e.db_url()
+        host = to_get_from.get(get_prefix + 'HOST', '')
+        port = to_get_from.get(get_prefix + 'PORT', '')
+        name = to_get_from.get(get_prefix + 'NAME', '')
+        user = to_get_from.get(get_prefix + 'USER', '')
+        password = to_get_from.get(get_prefix + 'PASSWORD', '')
+    else:
+        django_settings = get_settings()
+        remote_db_settings = django_settings.DATABASES.get('default', None)
+        host = remote_db_settings.get('HOST', '')
+        port = remote_db_settings.get('PORT', '')
+        name = remote_db_settings.get('NAME', '')
+        user = remote_db_settings.get('USER', '')
+        password = remote_db_settings.get('PASSWORD', '')
+    return host, port, name, user, password

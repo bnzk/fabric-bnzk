@@ -1,3 +1,10 @@
+import datetime
+import os
+
+from fabric.api import task, run, settings, roles, hide, env
+from fabric.contrib.console import confirm
+from fabric.operations import get, local, put
+from fabric.utils import puts
 
 
 @task

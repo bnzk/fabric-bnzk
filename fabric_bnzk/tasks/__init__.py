@@ -10,19 +10,36 @@ from fabric.contrib.project import rsync_project
 
 from .database import put_db, get_db, create_db, create_local_db  # noqa
 
-
 # hm. https://github.com/fabric/fabric/issues/256
 sys.path.insert(0, sys.path[0])
 
 # set some basic things, that are just needed.
 env.forward_agent = True
 
-
-from fabric_bnzk.bootstrap import (
+from fabric_bnzk.tasks.bootstrap import (
     bootstrap, create_virtualenv, create_nginx_folders, create_supervisor_folders, clone_repos
 )
-from fabric_bnzk.database import (
+from fabric_bnzk.tasks.main_tasks import (
+    deploy, update, restart, put_env_file, build_put_webpack, stop_django, disable_django, crontab, migrate,
+    requirements, collectstatic, git_set_remote
+)
+from fabric_bnzk.tasks.database import (
     create_db, create_local_db, create_mycnf, get_db, put_db
+)
+from fabric_bnzk.tasks.gunicorn import (
+    copy_restart_gunicorn, stop_gunicorn, disable_gunicorn
+)
+from fabric_bnzk.tasks.helper_tasks import (
+    dj, version, shell, memory, put_media, get_media, virtualenv, fix_permissions
+)
+from fabric_bnzk.tasks.nginx import (
+    create_nginx_folders, copy_restart_nginx
+)
+from fabric_bnzk.tasks.supervisor import (
+    create_supervisor_folders, supervisorctl, copy_restart_supervisord
+)
+from fabric_bnzk.tasks.uwsgi import (
+    copy_restart_uwsgi
 )
 
 __all__ = [
@@ -34,8 +51,29 @@ __all__ = [
     'create_db',
     'create_local_db',
     'create_mycnf',
+    'deploy',
+    'update', 'restart', 'put_env_file', 'build_put_webpack', 'stop_django', 'disable_django', 'crontab', 'migrate',
+    'requirements', 'collectstatic', 'git_set_remote',
     'get_db',
     'put_db',
+    'copy_restart_gunicorn',
+    'stop_gunicorn',
+    'disable_gunicorn',
+    'dj',
+    'version',
+    'shell',
+    'memory',
+    'get_media',
+    'put_media',
+    'virtualenv',
+    'fix_permissions',
+    'create_nginx_folders',
+    'copy_restart_nginx',
+    'create_supervisor_folders',
+    'supervisorctl',
+    'copy_restart_supervisord',
+    'copy_restart_uwsgi',
+
     # 'get_db_mysql',
     # 'put_db_mysql',
     # 'get_db_postgresql',

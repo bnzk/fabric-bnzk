@@ -1,14 +1,20 @@
+import datetime
+import os
 
+from fabric.api import cd, task, run, settings, roles, hide, env, execute
+from fabric.contrib.console import confirm
+from fabric.operations import get, local, put
+from fabric.utils import puts
 
-# ==============================================================================
-# Actual tasks
-# ==============================================================================
+from fabric_bnzk.tasks.helper_tasks import dj
+from fabric_bnzk.tasks.nginx import copy_restart_nginx
+from fabric_bnzk.tasks.supervisor import copy_restart_supervisord
 
 
 @task
 def deploy(verbosity='noisy'):
     """
-    Full server deploy.
+    Full server deploy.r
     Updates the repository (server-side), synchronizes the database, collects
     static files and then restarts the web service.
     """
@@ -25,7 +31,7 @@ def deploy(verbosity='noisy'):
         execute(collectstatic)
         puts('Synchronizing database...')
         execute(migrate)
-        puts('Restarting web server...')
+        puts('Restarting everything...')
         execute(restart)
         puts('Installing crontab...')
         execute(crontab)
@@ -217,7 +223,7 @@ def put_env_file():
         values = {
             'server': env.roledefs['web'][0],
             'locale_path': env.env_file,
-            'remote_path': os.path.join(env.project_dir, '.env'),
+            'remote_path': env.get('remote_env_file', os.path.join(env.project_dir, '.env')),
             'user': env.main_user,
         }
         local('ansible {server} --inventory {server}, '
