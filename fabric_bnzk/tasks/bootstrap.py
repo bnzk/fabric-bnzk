@@ -9,6 +9,7 @@ from fabric.utils import puts
 from fabric_bnzk.tasks.nginx import create_nginx_folders
 from fabric_bnzk.tasks.supervisor import create_supervisor_folders
 from fabric_bnzk.tasks.database import create_db
+from fabric_bnzk.tasks.main_tasks import requirements
 
 
 @task

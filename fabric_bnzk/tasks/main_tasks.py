@@ -9,6 +9,7 @@ from fabric.utils import puts
 from fabric_bnzk.tasks.helper_tasks import dj
 from fabric_bnzk.tasks.nginx import copy_restart_nginx
 from fabric_bnzk.tasks.supervisor import copy_restart_supervisord
+from fabric_bnzk.tasks.helper_tasks import virtualenv
 
 
 @task
