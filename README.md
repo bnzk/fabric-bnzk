@@ -21,7 +21,7 @@ Create a fabfile and import tasks:
 
 ```python
 # fabfile.py:
-from fabric_bnzk import *  # noqa
+from fabric_bnzk.tasks import *  # noqa
 
 env.project_name = 'your_project_name'  # required. used to create folder name on server
 env.repository = 'git@bitbucket.org:organization/{project_name}.git'.format(**env)  # required. repos? 
@@ -88,6 +88,10 @@ $ fab memory  # memory consumption
 $ fab restart  # restart only
 $ fab get_db get_media  # fetch db and media files
 ```
+
+## env vars/files
+
+
 
 ## Advanced Setup
 
