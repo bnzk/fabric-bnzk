@@ -228,7 +228,7 @@ def get_db_postgresql(local_db_name, remote_db_name, dump_only=False):
         local('rm %s' % local_dump_file)
 
 
-def put_db_postgresql(local_db_name, from_file, remote_db_name):
+def put_db_postgresql(local_db_name, from_file):
     """
     dump local db, import on server database (must exist)
     """
@@ -247,13 +247,11 @@ def put_db_postgresql(local_db_name, from_file, remote_db_name):
     if not from_file:
         local('rm %s' % local_dump_file)
     # up you go
-    django_settings = get_settings()
-    remote_db_settings = django_settings.DATABASES.get('default', None)
-    options, prompts = _get_postgres_options_name_prompts(remote_db_settings)
+    options, name, prompts = _get_postgres_options_name_prompts()
     with settings(prompts=prompts):
         run('psql {options} {database} < {file}'.format(
             options=options,
-            database=remote_db_settings['NAME'],
+            database=name,
             file=remote_dump_file,
         ))
     run('rm %s' % remote_dump_file)
@@ -274,8 +272,8 @@ def _get_remote_db_name():
     remote_db_name = getattr(env, 'remote_db_name', None)
     if not remote_db_name:
         if env.env_file:
-            load_remote_env_vars()
-            remote_db_name = os.environ.get('DB_NAME', '')
+            host, port, name, user, password = _get_db_credentials()
+            remote_db_name = name
         else:
             django_settings = get_settings()
             remote_db_settings = django_settings.DATABASES.get('default', None)
