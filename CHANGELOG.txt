@@ -1,6 +1,13 @@
 === (ongoing) ===
 
 
+=== 0.1.1 (2022-02-08) ==
+
+- dont re-encrypt .env files after every get_db and other actions that need remote env var configs. prevents unecessary commits, as every re-encrypt changes the file.
+- re-organized a bit
+
+
 === 0.1.0 (2022-11-04) ==
+
 - initial release
 - support for deploy on nine.ch VServers and djangoeurope.com

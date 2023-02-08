@@ -19,6 +19,6 @@ def load_local_env_vars():
 
 
 def load_remote_env_vars():
-    local("ansible-vault decrypt {env_file}".format(**env))
-    environ.Env.read_env(env.env_file)
-    local("ansible-vault encrypt {env_file}".format(**env))
+    local("ansible-vault decrypt {env_file} --output .env-temp".format(**env))
+    environ.Env.read_env('.env-temp')
+    local('rm .env-temp')
