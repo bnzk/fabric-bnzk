@@ -26,6 +26,8 @@ def deploy(verbosity='noisy'):
     with hide(*hide_args):
         puts('Updating repository...')
         execute(update)
+        puts('Build put webpack...')
+        execute(build_put_webpack)
         puts('Putting encrypted env file')
         execute(put_env_file)
         puts('Collecting static files...')
@@ -201,12 +203,21 @@ def build_put_webpack():
     - webpack_build_command, defaults to yarn build
     - webpack_bundle_path, defaults to 'apps/{project_name}/static/{project_name}/bundle'
     """
+    print('is_webpack', "what False")
+    if not env.get('is_webpack', False):
+        print("asvasdviasyn")
+        return
     local_branch = local('git branch --show-current')
     if not env.remote_ref.endswith(local_branch):
         yes_no = confirm("Configured remote_ref for {} is {}, but you are on branch {}. Continue anyway (y/N)?", default=False)
         if not yes_no:
             exit(0)
     local(env.get('webpack_build_command', 'yarn build'))
+    execute(put_webpack_bundle)
+
+@task
+@roles('web')
+def put_webpack_bundle():
     base_static_path = 'apps/{project_name}/static/{project_name}/bundle'.format(**env)
     base_static_path = env.get('webpack_bundle_path', base_static_path)
     local_path = base_static_path + '/*'
