@@ -239,16 +239,26 @@ def put_db_postgresql(local_db_name, from_file):
     """
     dump local db, import on server database (must exist)
     """
-    if not from_file:
-        dump_name = 'dump_for_%s.sql' % env.env_prefix
-        local_dump_file = './%s' % dump_name
-        local('pg_dump --clean --no-owner --if-exists --schema=public {database} > {file}'.format(
-            database=local_db_name,
-            file=local_dump_file,
-        ))
-    else:
+    if from_file:
         dump_name = os.path.basename(from_file)
         local_dump_file = from_file
+    else:
+        dump_name = 'dump_for_%s.sql' % env.env_prefix
+        local_dump_file = './%s' % dump_name
+        # local('pg_dump --clean --no-owner --if-exists --schema=public {database} > {file}'.format(
+        #     database=local_db_name,
+        #     file=local_dump_file,
+        # ))
+        options, db_name, prompts = _get_postgres_options_name_prompts(local=True)
+        with settings(prompts=prompts):
+            # doesnt work with local! enter db credentials manuall, or update/use
+            # pexpect package
+            local('{dbcommand_prefix} pg_dump --clean --no-owner --if-exists --schema=public {options} {database} > {file}'.format(
+                dbcommand_prefix=env.get('local_dbcommand_prefix', ''),
+                options=options,
+                database=local_db_name,
+                file=local_dump_file,
+            ))
     remote_dump_file = os.path.join(env.project_dir, dump_name)
     put(remote_path=remote_dump_file, local_path=local_dump_file)
     if not from_file:
