@@ -7,7 +7,7 @@ from fabric.contrib.console import confirm
 from fabric.operations import get, local, put
 from fabric.utils import puts
 
-from .utils import get_settings, load_remote_env_vars
+from .utils import get_settings, load_remote_env_vars, load_local_env_vars
 
 
 @task
@@ -185,9 +185,9 @@ def create_mycnf(force=False):
         local('rm {cnf_file}'.format(cnf_file=my_cnf_file, **env))
 
 
-def _get_postgres_options_name_prompts():
+def _get_postgres_options_name_prompts(local=False):
     options = ''
-    host, port, name, user, password = _get_db_credentials()
+    host, port, name, user, password = _get_db_credentials(local=local)
     prompts = {}
     if host:
         options += ' --host={}'.format(host)
@@ -222,10 +222,17 @@ def get_db_postgresql(local_db_name, remote_db_name, dump_only=False):
     get(remote_path=remote_dump_file, local_path=local_dump_file)
     run('rm %s' % remote_dump_file)
     if not dump_only:
-        # local('dropdb %s_dev' % env.project_name)
-        # local('createdb %s_dev' % env.project_name)
-        local('psql %s < %s' % (local_db_name, local_dump_file))
-        local('rm %s' % local_dump_file)
+        options, db_name, prompts = _get_postgres_options_name_prompts(local=True)
+        with settings(prompts=prompts):
+            # doesnt work with local! enter db credentials manuall, or update/use
+            # pexpect package
+            local('{dbcommand_prefix} psql {options} {db_name} < {dump}'.format(
+                dbcommand_prefix=env.get('local_dbcommand_prefix', ''),
+                options=options,
+                db_name=local_db_name,
+                dump=local_dump_file
+            ))
+            local('rm %s' % local_dump_file)
 
 
 def put_db_postgresql(local_db_name, from_file):
@@ -281,26 +288,44 @@ def _get_remote_db_name():
     return remote_db_name
 
 
-def _get_db_credentials():
+def _get_db_credentials(local=False):
     if env.env_file:
-        load_remote_env_vars()
-        to_get_from = os.environ
-        get_prefix = 'DB_'
-        if os.environ.get('DATABASE_URL', ''):
-            get_prefix = ''
-            e = environ.Env()
-            to_get_from = e.db_url()
-        host = to_get_from.get(get_prefix + 'HOST', '')
-        port = to_get_from.get(get_prefix + 'PORT', '')
-        name = to_get_from.get(get_prefix + 'NAME', '')
-        user = to_get_from.get(get_prefix + 'USER', '')
-        password = to_get_from.get(get_prefix + 'PASSWORD', '')
+        if local:
+            load_local_env_vars()
+        else:
+            load_remote_env_vars()
+        return _get_db_credentials_from_env()
     else:
-        django_settings = get_settings()
-        remote_db_settings = django_settings.DATABASES.get('default', None)
-        host = remote_db_settings.get('HOST', '')
-        port = remote_db_settings.get('PORT', '')
-        name = remote_db_settings.get('NAME', '')
-        user = remote_db_settings.get('USER', '')
-        password = remote_db_settings.get('PASSWORD', '')
+        # DEPRECATED
+        if local:
+            django_settings = get_settings('project.settings')
+        else:
+            django_settings = get_settings()
+        return _get_db_credentials_from_settings(django_settings)
+
+
+def _get_db_credentials_from_env():
+    to_get_from = os.environ
+    get_prefix = 'DB_'
+    if os.environ.get('DATABASE_URL', ''):
+        print(os.environ.get('DATABASE_URL', ''))
+        get_prefix = ''
+        e = environ.Env()
+        to_get_from = e.db_url()
+    host = to_get_from.get(get_prefix + 'HOST', '')
+    port = to_get_from.get(get_prefix + 'PORT', '')
+    name = to_get_from.get(get_prefix + 'NAME', '')
+    user = to_get_from.get(get_prefix + 'USER', '')
+    password = to_get_from.get(get_prefix + 'PASSWORD', '')
+    return host, port, name, user, password
+
+
+# DEPRECATED
+def _get_db_credentials_from_settings(settings):
+    remote_db_settings = django_settings.DATABASES.get('default', None)
+    host = remote_db_settings.get('HOST', '')
+    port = remote_db_settings.get('PORT', '')
+    name = remote_db_settings.get('NAME', '')
+    user = remote_db_settings.get('USER', '')
+    password = remote_db_settings.get('PASSWORD', '')
     return host, port, name, user, password

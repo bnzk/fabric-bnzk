@@ -15,10 +15,10 @@ def get_settings(conf=None):
 
 
 def load_local_env_vars():
-    environ.Env.read_env('env')
+    environ.Env.read_env('.env', overwrite=True)
 
 
 def load_remote_env_vars():
     local("ansible-vault decrypt {env_file} --output .env-temp".format(**env))
-    environ.Env.read_env('.env-temp')
+    environ.Env.read_env('.env-temp', overwrite=True)
     local('rm .env-temp')
