@@ -200,19 +200,18 @@ def build_put_webpack():
     """
     build webpack, put on server!
     env attributes:
-    - webpack_build_command, defaults to yarn build
+    - webpack_build_command, defaults to npm run build
     - webpack_bundle_path, defaults to 'apps/{project_name}/static/{project_name}/bundle'
     """
     print('is_webpack', "what False")
     if not env.get('is_webpack', False):
-        print("asvasdviasyn")
         return
     local_branch = local('git branch --show-current')
     if not env.remote_ref.endswith(local_branch):
         yes_no = confirm("Configured remote_ref for {} is {}, but you are on branch {}. Continue anyway (y/N)?", default=False)
         if not yes_no:
             exit(0)
-    local(env.get('webpack_build_command', 'yarn build'))
+    local(env.get('webpack_build_command', 'npm run build'))
     execute(put_webpack_bundle)
 
 @task
