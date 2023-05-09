@@ -331,7 +331,7 @@ def _get_db_credentials_from_env():
 
 
 # DEPRECATED
-def _get_db_credentials_from_settings(settings):
+def _get_db_credentials_from_settings(django_settings):
     remote_db_settings = django_settings.DATABASES.get('default', None)
     host = remote_db_settings.get('HOST', '')
     port = remote_db_settings.get('PORT', '')
