@@ -288,7 +288,7 @@ def _get_local_db_name():
 def _get_remote_db_name():
     remote_db_name = getattr(env, 'remote_db_name', None)
     if not remote_db_name:
-        if env.env_file:
+        if env.get('env_file', None):
             host, port, name, user, password = _get_db_credentials()
             remote_db_name = name
         else:
@@ -299,7 +299,7 @@ def _get_remote_db_name():
 
 
 def _get_db_credentials(local=False):
-    if env.env_file:
+    if env.get('env_file', None):
         if local:
             load_local_env_vars()
         else:
