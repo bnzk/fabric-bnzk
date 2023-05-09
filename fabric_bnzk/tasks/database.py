@@ -204,7 +204,7 @@ def _get_postgres_options_name_prompts(local=False):
     return options, name, prompts
 
 
-def get_db_postgresql(local_db_name, remote_db_name, dump_only=False):
+def get_db_postgresql(local_db_name, dump_only=False):
     """
     dump db on server, import to local mysql (must exist)
     """
