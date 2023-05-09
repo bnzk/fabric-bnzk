@@ -1,10 +1,8 @@
-import datetime
 import os
 
-from fabric.api import task, run, settings, roles, hide, env
+from fabric.api import cd, task, run, roles, env
 from fabric.contrib.console import confirm
 from fabric.contrib.project import rsync_project
-from fabric.operations import get, local, put
 from fabric.utils import puts
 
 

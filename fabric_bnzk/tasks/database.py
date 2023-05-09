@@ -169,13 +169,15 @@ def create_mycnf(force=False):
         local('echo "[client]" >> {cnf_file}'.format(cnf_file=my_cnf_file, **env))
         local('echo "# The following password will be sent to all'
               'standard MySQL clients" >> {cnf_file}'.format(cnf_file=my_cnf_file, **env))
-        local('echo "password = \"{pw}\"" >> {cnf_file}'.format(
+        local(
+            'echo "password = \"{pw}\"" >> {cnf_file}'.format(
                 cnf_file=my_cnf_file,
                 pw=db_settings["default"]["PASSWORD"],
                 **env
             )
         )
-        local('echo "user = \"{db_user}\"" >> {cnf_file}'.format(
+        local(
+            'echo "user = \"{db_user}\"" >> {cnf_file}'.format(
                 cnf_file=my_cnf_file,
                 db_user=db_settings["default"]["USER"],
                 **env
@@ -318,7 +320,6 @@ def _get_db_credentials_from_env():
     to_get_from = os.environ
     get_prefix = 'DB_'
     if os.environ.get('DATABASE_URL', ''):
-        print(os.environ.get('DATABASE_URL', ''))
         get_prefix = ''
         e = environ.Env()
         to_get_from = e.db_url()

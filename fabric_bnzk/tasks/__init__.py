@@ -1,23 +1,9 @@
-import os
 import sys
 
-import environ
-from fabric.api import task, run, roles, cd, execute, hide, puts, env
-from fabric.context_managers import settings
-from fabric.contrib.console import confirm
-from fabric.operations import local, put
-from fabric.contrib.project import rsync_project
-
-from .database import put_db, get_db, create_db, create_local_db  # noqa
-
-# hm. https://github.com/fabric/fabric/issues/256
-sys.path.insert(0, sys.path[0])
-
-# set some basic things, that are just needed.
-env.forward_agent = True
+from fabric.api import env
 
 from fabric_bnzk.tasks.bootstrap import (
-    bootstrap, create_virtualenv, create_nginx_folders, create_supervisor_folders, clone_repos
+    bootstrap, create_virtualenv, clone_repos
 )
 from fabric_bnzk.tasks.main_tasks import (
     deploy, update, restart, put_env_file, build_put_webpack, stop_django, disable_django, crontab, migrate,
@@ -41,6 +27,14 @@ from fabric_bnzk.tasks.supervisor import (
 from fabric_bnzk.tasks.uwsgi import (
     copy_restart_uwsgi
 )
+
+
+# hm. https://github.com/fabric/fabric/issues/256
+sys.path.insert(0, sys.path[0])
+
+# set some basic things, that are just needed.
+env.forward_agent = True
+
 
 __all__ = [
     'bootstrap',

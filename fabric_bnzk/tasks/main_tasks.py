@@ -1,11 +1,11 @@
-import datetime
 import os
 
-from fabric.api import cd, task, run, settings, roles, hide, env, execute
+from fabric.api import cd, task, run, roles, hide, env, execute
 from fabric.contrib.console import confirm
-from fabric.operations import get, local, put
+from fabric.operations import local, put
 from fabric.utils import puts
 
+from fabric_bnzk.tasks import copy_restart_gunicorn, copy_restart_uwsgi, stop_gunicorn, disable_gunicorn
 from fabric_bnzk.tasks.helper_tasks import dj
 from fabric_bnzk.tasks.nginx import copy_restart_nginx
 from fabric_bnzk.tasks.supervisor import copy_restart_supervisord
@@ -151,6 +151,7 @@ def restart():
     if env.get('is_systemd', None):
         exit("global systemd restart not implemented!")
 
+
 @task
 @roles('web')
 def stop_django():
@@ -161,7 +162,7 @@ def stop_django():
         stop_gunicorn()
     if env.is_uwsgi:
         exit("uswgi stop not implemented!")
-        stop_uwsgi()
+        # stop_uwsgi()
     if env.is_apache:
         exit("apache stop not implemented!")
 
@@ -176,10 +177,9 @@ def disable_django():
         disable_gunicorn()
     if env.is_uwsgi:
         exit("uswgi disable not implemented!")
-        disable_uwsgi()
+        # disable_uwsgi()
     if env.is_apache:
         exit("apache disable not implemented!")
-
 
 
 @task
@@ -193,7 +193,6 @@ def requirements():
     virtualenv('pip install -r {project_dir}/{requirements_file}'.format(**env))
 
 
-
 @task
 @roles('web')
 def build_put_webpack():
@@ -203,7 +202,6 @@ def build_put_webpack():
     - webpack_build_command, defaults to npm run build
     - webpack_bundle_path, defaults to 'apps/{project_name}/static/{project_name}/bundle'
     """
-    print('is_webpack', "what False")
     if not env.get('is_webpack', False):
         return
     local_branch = local('git branch --show-current')
@@ -213,6 +211,7 @@ def build_put_webpack():
             exit(0)
     local(env.get('webpack_build_command', 'npm run build'))
     execute(put_webpack_bundle)
+
 
 @task
 @roles('web')

@@ -1,15 +1,10 @@
-import datetime
-import os
-
-from fabric.api import task, run, settings, roles, hide, env
-from fabric.contrib.console import confirm
-from fabric.operations import get, local, put
+from fabric.api import task, run, roles, hide, env
 from fabric.utils import puts
 
-from fabric_bnzk.tasks.nginx import create_nginx_folders
-from fabric_bnzk.tasks.supervisor import create_supervisor_folders
 from fabric_bnzk.tasks.database import create_db
 from fabric_bnzk.tasks.main_tasks import requirements
+from fabric_bnzk.tasks.nginx import create_nginx_folders
+from fabric_bnzk.tasks.supervisor import create_supervisor_folders
 
 
 @task
@@ -61,4 +56,3 @@ def clone_repos():
         return
     run('git clone {repository} {project_dir}'.format(**env))
     puts('cloned {repository} to {project_dir}.'.format(**env))
-
