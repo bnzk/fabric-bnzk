@@ -5,10 +5,11 @@ from fabric.contrib.console import confirm
 from fabric.operations import local, put
 from fabric.utils import puts
 
-from fabric_bnzk.tasks import copy_restart_gunicorn, copy_restart_uwsgi, stop_gunicorn, disable_gunicorn
 from fabric_bnzk.tasks.helper_tasks import dj
 from fabric_bnzk.tasks.nginx import copy_restart_nginx
 from fabric_bnzk.tasks.supervisor import copy_restart_supervisord
+from fabric_bnzk.tasks.gunicorn import copy_restart_gunicorn, stop_gunicorn, disable_gunicorn
+from fabric_bnzk.tasks.uwsgi import copy_restart_uwsgi
 from fabric_bnzk.tasks.helper_tasks import virtualenv
 
 
