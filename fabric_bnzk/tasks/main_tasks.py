@@ -73,7 +73,7 @@ def update(force_install=False, tag=None):
         with hide('running', 'stdout'):
             changed_files = run('git diff-index --cached --name-only '
                                 '{remote_ref}'.format(**env)).splitlines()
-        if not changed_files and action != 'force':
+        if not (changed_files or force_install):
             # No changes, we can exit now.
             return
         reqs_changed = False
