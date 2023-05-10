@@ -57,7 +57,7 @@ def git_set_remote():
 
 @task
 @roles('web', 'db')
-def update(action='check', tag=None):
+def update(force_install=False, tag=None):
     """
     Update the repository (server-side).
 
@@ -77,7 +77,7 @@ def update(action='check', tag=None):
             # No changes, we can exit now.
             return
         reqs_changed = False
-        if action == 'check':
+        if not force_install:
             for file in env.requirements_files:
                 if file in changed_files:
                     reqs_changed = True
@@ -92,7 +92,7 @@ def update(action='check', tag=None):
         run('git clean -df')
         # run('git clean -df {project_name} docs requirements public/static '.format(**env))
         # fix_permissions()
-    if action == 'force' or reqs_changed:
+    if force_install or reqs_changed:
         # Not using execute() because we don't want to run multiple times for
         # each role (since this task gets run per role).
         requirements()
