@@ -5,6 +5,9 @@ from fabric.api import env
 from fabric_bnzk.tasks.bootstrap import (
     bootstrap, create_virtualenv, clone_repos
 )
+from fabric_bnzk.tasks.local import (
+    pip_init, pip_compile
+)
 from fabric_bnzk.tasks.main_tasks import (
     deploy, update, restart, put_env_file, build_put_webpack, stop_django, disable_django, crontab, migrate,
     requirements, collectstatic, git_set_remote
@@ -38,6 +41,8 @@ env.forward_agent = True
 
 __all__ = [
     'bootstrap',
+    'pip_init',
+    'pip_compile',
     'create_virtualenv',
     'create_nginx_folders',
     'create_supervisor_folders',
