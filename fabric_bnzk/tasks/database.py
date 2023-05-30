@@ -1,7 +1,6 @@
 import datetime
 import os
 
-import environ
 from fabric.api import task, run, settings, roles, hide, env
 from fabric.contrib.console import confirm
 from fabric.operations import get, local, put
@@ -317,6 +316,7 @@ def _get_db_credentials(local=False):
 
 
 def _get_db_credentials_from_env():
+    import environ
     to_get_from = os.environ
     get_prefix = 'DB_'
     if os.environ.get('DATABASE_URL', ''):

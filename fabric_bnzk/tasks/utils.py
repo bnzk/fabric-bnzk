@@ -1,4 +1,3 @@
-import environ
 from fabric.operations import local
 from fabric.state import env
 from fabric.contrib import django
@@ -15,10 +14,12 @@ def get_settings(conf=None):
 
 
 def load_local_env_vars():
+    import environ
     environ.Env.read_env('.env', overwrite=True)
 
 
 def load_remote_env_vars():
+    import environ
     local("ansible-vault decrypt {env_file} --output .env-temp".format(**env))
     environ.Env.read_env('.env-temp', overwrite=True)
     local('rm .env-temp')

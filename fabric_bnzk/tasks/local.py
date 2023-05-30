@@ -2,7 +2,7 @@ from fabric.api import task, local
 
 
 @task
-def pip_init():
+def pip_init_upgrade():
     local('pip install --upgrade pip setuptools wheel pip-tools')
 
 
@@ -13,5 +13,3 @@ def pip_compile(upgrade=False):
     local('pip-sync requirements/dev.txt')
     local(f'pip-compile requirements/deploy.in {flag}')
     local('pip-audit')
-
-
