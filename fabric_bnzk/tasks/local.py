@@ -1,4 +1,4 @@
-from fabric.api import task, local
+from fabric.api import env, task, local
 
 
 @task
@@ -8,8 +8,10 @@ def pip_init_upgrade():
 
 @task
 def pip_compile(upgrade=False):
-    flag = '--upgrade' if upgrade else ''
-    local(f'pip-compile requirements/dev.in {flag}')
+    flags = ''
+    flags += '--upgrade' if upgrade else ''
+    flags += '--upgrade' if env.pip_compile_hashes else ''
+    local(f'pip-compile requirements/dev.in {flags}')
     local('pip-sync requirements/dev.txt')
-    local(f'pip-compile requirements/deploy.in {flag}')
+    local(f'pip-compile requirements/deploy.in {flags}')
     local('pip-audit')
