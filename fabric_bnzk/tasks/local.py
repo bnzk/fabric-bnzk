@@ -10,7 +10,7 @@ def pip_init_upgrade():
 def pip_compile(upgrade=False):
     flags = ''
     flags += ' --upgrade ' if upgrade else ''
-    flags += ' --generate-hashes ' if env.pip_compile_hashes else ''
+    flags += ' --generate-hashes ' if getattr(env, 'pip_compile_hashes', '')
     local(f'pip-compile requirements/dev.in {flags}')
     local('pip-sync requirements/dev.txt')
     local(f'pip-compile requirements/deploy.in {flags}')
