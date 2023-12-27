@@ -1,3 +1,5 @@
+from importlib import reload
+
 from fabric.operations import local
 from fabric.state import env
 from fabric.contrib import django
@@ -6,11 +8,13 @@ from fabric.contrib import django
 def get_settings(conf=None):
     # do this here. django settings cannot be imported more than once...probably.
     # still dont really get the mess here.
+    # TADA: https://stackoverflow.com/questions/437589/how-do-i-unload-reload-a-python-module
     if not conf:
         conf = env.project_conf
     django.settings_module(conf)
-    from django.conf import settings
-    return settings
+    from django import conf
+    reload(conf)
+    return conf.settings
 
 
 def load_local_env_vars():
