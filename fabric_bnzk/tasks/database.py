@@ -116,7 +116,7 @@ def get_db_mysql(local_db_name, dump_only=False):
     get(remote_path=remote_dump_file, local_path=local_dump_file)
     run('rm %s' % remote_dump_file)
     if not dump_only:
-        local('mysql -u root %s < %s' % (local_db_name, local_dump_file))
+        local('mysql -u root --password %s < %s' % (local_db_name, local_dump_file))
         local('rm %s' % local_dump_file)
 
 
@@ -127,7 +127,7 @@ def put_db_mysql(local_db_name, from_file):
     if not from_file:
         dump_name = 'dump_for_%s.sql' % env.env_prefix
         local_dump_file = './%s' % dump_name
-        local('mysqldump --user=root {database} > {file}'.format(
+        local('mysqldump --user=root --password {database} > {file}'.format(
             database=local_db_name,
             file=local_dump_file,
         ))
@@ -334,6 +334,7 @@ def _get_db_credentials_from_env():
 # DEPRECATED
 def _get_db_credentials_from_settings(django_settings):
     remote_db_settings = django_settings.DATABASES.get('default', None)
+    print(remote_db_settings)
     host = remote_db_settings.get('HOST', '')
     port = remote_db_settings.get('PORT', '')
     name = remote_db_settings.get('NAME', '')
