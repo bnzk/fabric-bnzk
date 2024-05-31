@@ -3,6 +3,7 @@ from fabric.utils import puts
 
 from fabric_bnzk.tasks.database import create_db
 from fabric_bnzk.tasks.main_tasks import requirements
+from fabric_bnzk.tasks.helper_tasks import virtualenv
 from fabric_bnzk.tasks.nginx import create_nginx_folders
 from fabric_bnzk.tasks.supervisor import create_supervisor_folders
 
@@ -64,7 +65,7 @@ def create_virtualenv(force=False):
         if getattr(env, 'is_python3', None):
             venv_command += ' --python=python3'
     run(venv_command)
-    run("pip install -U pip setuptools wheel")
+    virtualenv("pip install -U pip setuptools wheel")
     requirements()
     puts('Created virtualenv at {virtualenv_dir}.'.format(**env))
 
