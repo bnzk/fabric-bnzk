@@ -15,3 +15,10 @@ def pip_compile(upgrade=False):
     local('pip-sync requirements/dev.txt')
     local(f'pip-compile requirements/deploy.in {flags}')
     local('pip-audit')
+    
+
+@task
+def fix_paramiko():
+    local('yes | pip uninstall paramiko-ng')
+    local('yes | pip uninstall paramiko')
+    local('pip install paramiko')
