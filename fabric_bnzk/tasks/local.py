@@ -20,4 +20,5 @@ def pip_compile(upgrade=False):
 @task
 def fix_paramiko():
     local('yes | pip uninstall paramiko-ng')
+    local('yes | pip uninstall paramiko')
     local('pip install paramiko')
