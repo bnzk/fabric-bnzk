@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fabric-bnzk"
+description = "Fabric tasks and helpers for bnzk projects"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.7"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Ben Stähli", email = "bnzk@bnzk.ch" },
+]
+keywords = ["fabric"]
+dependencies = [
+  "fab-classic",
+]
+# Use the version defined in the package
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/bnzk/fabric-bnzk"
+Repository = "https://github.com/bnzk/fabric-bnzk"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { attr = "fabric_bnzk.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["fabric_bnzk*"]
