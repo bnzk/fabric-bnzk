@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "fabric-bnzk"
@@ -22,11 +22,8 @@ dynamic = ["version"]
 Homepage = "https://github.com/bnzk/fabric-bnzk"
 Repository = "https://github.com/bnzk/fabric-bnzk"
 
-[tool.setuptools]
-include-package-data = true
+[tool.hatch.version]
+path = "fabric_bnzk/__init__.py"
 
-[tool.setuptools.dynamic]
-version = { attr = "fabric_bnzk.__version__" }
-
-[tool.setuptools.packages.find]
-include = ["fabric_bnzk*"]
+[tool.hatch.build]
+include = ["fabric_bnzk"]
