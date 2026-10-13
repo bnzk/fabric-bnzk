@@ -1,5 +1,8 @@
 === (ongoing) ===
 
+- run the gunicorn restart without pty. under a pty, the daemonized gunicorn was killed by SIGHUP when the ssh session closed, so it often did not come up after a deploy
+
+
 === 0.1.2 (2024-09-26) ==
 
 - fix in create_custom_python, add it to default available tasks

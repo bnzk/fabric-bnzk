@@ -20,4 +20,6 @@ def copy_restart_gunicorn():
         )
         run('chmod u+x $HOME/init/{site}-{env_prefix}.sh'.format(site=site, **env))
         if (not env.get('is_supervisord', None) and not env.get('is_systemd', None)):
-            run(env.gunicorn_restart_command.format(site=site, **env))
+            # no pty: the SIGHUP sent when a pty session closes kills the
+            # daemonized gunicorn before it has set up its signal handlers
+            run(env.gunicorn_restart_command.format(site=site, **env), pty=False)
