@@ -27,3 +27,25 @@ path = "fabric_bnzk/__init__.py"
 
 [tool.hatch.build]
 include = ["fabric_bnzk"]
+
+[tool.ruff]
+# Same as Black.
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  # pyflakes, pycodestyle
+  "F", "E", "W",
+  # mccabe
+  "C90",
+  # isort
+  "I",
+  # flake8-2020
+  "YTT",
+  # flake8-comprehensions
+  "C4",
+  # unused noqa
+  "RUF100",
+]
+# long strings / commands, black handles the rest
+ignore = ["E501"]
