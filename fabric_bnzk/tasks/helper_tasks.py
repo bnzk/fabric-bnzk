@@ -1,38 +1,42 @@
 import os
 
-from fabric.api import cd, task, run, roles, env
+from fabric.api import cd, env, roles, run, task
 from fabric.contrib.console import confirm
 from fabric.contrib.project import rsync_project
 from fabric.utils import puts
 
 
 @task
-@roles('web')
+@roles("web")
 def version():
     """
     Get installed version from each server.
     """
     with cd(env.project_dir):
-        run('git describe --tags')
-        run('git log --graph --pretty=oneline -n20')
+        run("git describe --tags")
+        run("git log --graph --pretty=oneline -n20")
 
 
 @task
-@roles('web')
+@roles("web")
 def get_media():
     """
     get media files. path by convention, adapt if needed.
     """
     # trivial version
     # get(os.path.join(env.project_dir, 'public', 'media'), 'public/media')
-    if getattr(env, 'custom_media_root', None):
+    if getattr(env, "custom_media_root", None):
         remote_dir = env.custom_media_root
-        if remote_dir[-1] == '/':
+        if remote_dir[-1] == "/":
             # cannot end with a slash! rsync is not working!
             remote_dir = remote_dir[0:-1]
     else:
-        remote_dir = os.path.join(env.project_dir, 'public', 'media', )
-    local_dir = os.path.join('public')
+        remote_dir = os.path.join(
+            env.project_dir,
+            "public",
+            "media",
+        )
+    local_dir = os.path.join("public")
     extra_opts = ""
     # extra_opts = "--dry-run"
     rsync_project(
@@ -45,7 +49,7 @@ def get_media():
 
 
 @task
-@roles('web')
+@roles("web")
 def put_media():
     """
     put media files. path by convention, adapt if needed.
@@ -61,15 +65,18 @@ def put_media():
         return
 
     # go for it!
-    if getattr(env, 'custom_media_root', None):
+    if getattr(env, "custom_media_root", None):
         cust = env.custom_media_root
         remote_dir, to_remove = os.path.split(env.custom_media_root)
         if not to_remove:
             # custom media root ended with a slash - let's do it again!
             remote_dir, to_remove = os.path.split(cust)
     else:
-        remote_dir = os.path.join(env.project_dir, 'public', )
-    local_dir = os.path.join('public', 'media')
+        remote_dir = os.path.join(
+            env.project_dir,
+            "public",
+        )
+    local_dir = os.path.join("public", "media")
     extra_opts = ""
     # extra_opts = "--dry-run"
     rsync_project(
@@ -88,37 +95,37 @@ def virtualenv(command):
     Usage:
         virtualenv('pip install django')
     """
-    source = 'source {virtualenv_dir}/bin/activate && '.format(**env)
+    source = "source {virtualenv_dir}/bin/activate && ".format(**env)
     run(source + command)
 
 
 @task
-@roles('web')
+@roles("web")
 def dj(command):
     """
     Run a Django manage.py command on the server.
     """
-    cmd_prefix = 'cd {project_dir}'.format(**env)
-    if getattr(env, 'custom_manage_py_root', None):
-        cmd_prefix = 'cd {}'.format(env.custom_manage_py_root)
-    source_env_prefix = ''
-    if getattr(env, 'source_env', False) and getattr(env, 'env_file', None):
-        file = '.env'
-        if env.get('remote_env_file', None):
-            file = env.get('remote_env_file')
-        source_env_prefix = ' && source {}'.format(file)
+    cmd_prefix = "cd {project_dir}".format(**env)
+    if getattr(env, "custom_manage_py_root", None):
+        cmd_prefix = "cd {}".format(env.custom_manage_py_root)
+    source_env_prefix = ""
+    if getattr(env, "source_env", False) and getattr(env, "env_file", None):
+        file = ".env"
+        if env.get("remote_env_file", None):
+            file = env.get("remote_env_file")
+        source_env_prefix = " && source {}".format(file)
     virtualenv(
-        '{cmd_prefix} {source_env_prefix} && export DJANGO_SETTINGS_MODULE={project_conf} && ./manage.py {dj_command}'.format(
+        "{cmd_prefix} {source_env_prefix} && export DJANGO_SETTINGS_MODULE={project_conf} && ./manage.py {dj_command}".format(
             dj_command=command,
             cmd_prefix=cmd_prefix,
             source_env_prefix=source_env_prefix,
-            **env
+            **env,
         )
     )
 
 
 @task
-@roles('web')
+@roles("web")
 def shell(command):
     """
     Run an arbitrary command on the server.
@@ -127,15 +134,18 @@ def shell(command):
 
 
 @task
-@roles('web')
+@roles("web")
 def memory():
     """
     Run an arbitrary command on the server.
     """
-    run("ps -U %s --no-headers -o rss | awk '{ sum+=$1} END {print int(sum/1024) \"MB\"}'" % (env.main_user))
+    run(
+        "ps -U %s --no-headers -o rss | awk '{ sum+=$1} END {print int(sum/1024) \"MB\"}'"
+        % (env.main_user)
+    )
 
 
-def fix_permissions(path='.'):
+def fix_permissions(path="."):
     """
     Fix the file permissions. what a hack.
     """

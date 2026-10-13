@@ -1,62 +1,65 @@
 import os
 
-from fabric.api import cd, task, run, roles, hide, env, execute
+from fabric.api import cd, env, execute, hide, roles, run, task
 from fabric.contrib.console import confirm
 from fabric.operations import local, put
 from fabric.utils import puts
 
-from fabric_bnzk.tasks.helper_tasks import dj
+from fabric_bnzk.tasks.gunicorn import (
+    copy_restart_gunicorn,
+    disable_gunicorn,
+    stop_gunicorn,
+)
+from fabric_bnzk.tasks.helper_tasks import dj, virtualenv
 from fabric_bnzk.tasks.nginx import copy_restart_nginx
 from fabric_bnzk.tasks.supervisor import copy_restart_supervisord
-from fabric_bnzk.tasks.gunicorn import copy_restart_gunicorn, stop_gunicorn, disable_gunicorn
 from fabric_bnzk.tasks.uwsgi import copy_restart_uwsgi
-from fabric_bnzk.tasks.helper_tasks import virtualenv
 
 
 @task
-def deploy(verbosity='noisy'):
+def deploy(verbosity="noisy"):
     """
     Full server deploy.r
     Updates the repository (server-side), synchronizes the database, collects
     static files and then restarts the web service.
     """
-    if verbosity == 'noisy':
+    if verbosity == "noisy":
         hide_args = []
     else:
-        hide_args = ['running', 'stdout']
+        hide_args = ["running", "stdout"]
     with hide(*hide_args):
-        puts('Updating repository...')
+        puts("Updating repository...")
         execute(update)
-        puts('Build put webpack...')
+        puts("Build put webpack...")
         execute(build_put_webpack)
-        puts('Putting encrypted env file')
+        puts("Putting encrypted env file")
         execute(put_env_file)
-        puts('Collecting static files...')
+        puts("Collecting static files...")
         execute(collectstatic)
-        puts('Synchronizing database...')
+        puts("Synchronizing database...")
         execute(migrate)
-        puts('Restarting everything...')
+        puts("Restarting everything...")
         execute(restart)
-        puts('Installing crontab...')
+        puts("Installing crontab...")
         execute(crontab)
 
 
 @task
-@roles('web')
+@roles("web")
 def git_set_remote():
     """
     reset the repository's remote.
     """
     with cd(env.project_dir):
-        remote, dest_branch = env.remote_ref.split('/', 1)
-        run('git remote remove {}'.format(remote))
-        run('git remote add {} {}'.format(remote, env.repository))
-        run('git fetch {}'.format(remote))
-        run('git branch --set-upstream-to={} {}'.format(env.remote_ref, dest_branch))
+        remote, dest_branch = env.remote_ref.split("/", 1)
+        run("git remote remove {}".format(remote))
+        run("git remote add {} {}".format(remote, env.repository))
+        run("git fetch {}".format(remote))
+        run("git branch --set-upstream-to={} {}".format(env.remote_ref, dest_branch))
 
 
 @task
-@roles('web', 'db')
+@roles("web", "db")
 def update(force_install=False, tag=None):
     """
     Update the repository (server-side).
@@ -67,12 +70,12 @@ def update(force_install=False, tag=None):
     updating requirements at all.
     """
     with cd(env.project_dir):
-        remote, dest_branch = env.remote_ref.split('/', 1)
-        run('git fetch {remote}'.format(remote=remote,
-                                        dest_branch=dest_branch, **env))
-        with hide('running', 'stdout'):
-            changed_files = run('git diff-index --cached --name-only '
-                                '{remote_ref}'.format(**env)).splitlines()
+        remote, dest_branch = env.remote_ref.split("/", 1)
+        run("git fetch {remote}".format(remote=remote, dest_branch=dest_branch, **env))
+        with hide("running", "stdout"):
+            changed_files = run(
+                "git diff-index --cached --name-only " "{remote_ref}".format(**env)
+            ).splitlines()
         if not (changed_files or force_install):
             # No changes, we can exit now.
             return
@@ -84,12 +87,12 @@ def update(force_install=False, tag=None):
                     break
         # before. run('git merge {remote_ref}'.format(**env))
         if tag:
-            run('git checkout tags/{tag}'.format(tag=tag, **env))
+            run("git checkout tags/{tag}".format(tag=tag, **env))
         else:
-            run('git checkout {dest_branch}'.format(dest_branch=dest_branch, **env))
-            run('git pull'.format(dest_branch=dest_branch, **env))
+            run("git checkout {dest_branch}".format(dest_branch=dest_branch, **env))
+            run("git pull".format(dest_branch=dest_branch, **env))
         run('find -name "*.pyc" -delete')
-        run('git clean -df')
+        run("git clean -df")
         # run('git clean -df {project_name} docs requirements public/static '.format(**env))
         # fix_permissions()
     if force_install or reqs_changed:
@@ -99,62 +102,62 @@ def update(force_install=False, tag=None):
 
 
 @task
-@roles('web')
+@roles("web")
 def crontab():
     """
     install crontab
     """
     if env.deploy_crontab:
-        if getattr(env, 'contab_file', None):
+        if getattr(env, "contab_file", None):
             crontab_file = env.crontab_file
         else:
-            crontab_file = 'deployment/crontab.txt'
+            crontab_file = "deployment/crontab.txt"
         with cd(env.project_dir):
-            run('crontab {}'.format(crontab_file))
+            run("crontab {}".format(crontab_file))
     else:
-        puts('not deploying crontab to %s!' % env.env_prefix)
+        puts("not deploying crontab to %s!" % env.env_prefix)
 
 
 @task
-@roles('web')
+@roles("web")
 def collectstatic():
     """
     Collect static files from apps and other locations in a single location.
     """
-    dj('collectstatic --link --noinput')
+    dj("collectstatic --link --noinput")
 
 
 @task
-@roles('db')
+@roles("db")
 def migrate():
     """
     migrate the database.
     """
-    dj('migrate --noinput')
+    dj("migrate --noinput")
 
 
 @task
-@roles('web')
+@roles("web")
 def restart():
     """
     Copy gunicorn & nginx config, restart them.
     """
     if env.is_nginx_gunicorn:
-        if not getattr(env, 'is_supervisord', None):
+        if not getattr(env, "is_supervisord", None):
             copy_restart_gunicorn()
         copy_restart_nginx()
     if env.is_uwsgi:
         copy_restart_uwsgi()
     if env.is_apache:
         exit("apache restart not implemented!")
-    if env.get('is_supervisord', None):
+    if env.get("is_supervisord", None):
         copy_restart_supervisord()
-    if env.get('is_systemd', None):
+    if env.get("is_systemd", None):
         exit("global systemd restart not implemented!")
 
 
 @task
-@roles('web')
+@roles("web")
 def stop_django():
     """
     stop django, for now, may be restarted...beware
@@ -169,7 +172,7 @@ def stop_django():
 
 
 @task
-@roles('web')
+@roles("web")
 def disable_django():
     """
     disable django service/app completely
@@ -184,18 +187,18 @@ def disable_django():
 
 
 @task
-@roles('web', 'db')
+@roles("web", "db")
 def requirements():
     """
     Update the requirements.
     """
     # let it get some more older
     # virtualenv('pip-sync {project_dir}/{requirements_file}'.format(**env))
-    virtualenv('pip install -r {project_dir}/{requirements_file}'.format(**env))
+    virtualenv("pip install -r {project_dir}/{requirements_file}".format(**env))
 
 
 @task
-@roles('web')
+@roles("web")
 def build_put_webpack():
     """
     build webpack, put on server!
@@ -203,25 +206,28 @@ def build_put_webpack():
     - webpack_build_command, defaults to npm run build
     - webpack_bundle_path, defaults to 'apps/{project_name}/static/{project_name}/bundle'
     """
-    if not env.get('is_webpack', False):
+    if not env.get("is_webpack", False):
         return
-    local_branch = local('git branch --show-current')
+    local_branch = local("git branch --show-current")
     if not env.remote_ref.endswith(local_branch):
-        yes_no = confirm("Configured remote_ref for {} is {}, but you are on branch {}. Continue anyway (y/N)?", default=False)
+        yes_no = confirm(
+            "Configured remote_ref for {} is {}, but you are on branch {}. Continue anyway (y/N)?",
+            default=False,
+        )
         if not yes_no:
             exit(0)
-    local(env.get('webpack_build_command', 'npm run build'))
+    local(env.get("webpack_build_command", "npm run build"))
     execute(put_webpack_bundle)
 
 
 @task
-@roles('web')
+@roles("web")
 def put_webpack_bundle():
-    base_static_path = 'apps/{project_name}/static/{project_name}/bundle'.format(**env)
-    base_static_path = env.get('webpack_bundle_path', base_static_path)
-    local_path = base_static_path + '/*'
-    remote_path = '{}/{}'.format(env.project_dir, base_static_path)
-    run('mkdir --parents {}'.format(remote_path))
+    base_static_path = "apps/{project_name}/static/{project_name}/bundle".format(**env)
+    base_static_path = env.get("webpack_bundle_path", base_static_path)
+    local_path = base_static_path + "/*"
+    remote_path = "{}/{}".format(env.project_dir, base_static_path)
+    run("mkdir --parents {}".format(remote_path))
     put(local_path=local_path, remote_path=remote_path)
 
 
@@ -230,15 +236,19 @@ def put_env_file():
     """
     put the ansible-vault encrypted env file, with ansible, so it will be decrypted
     """
-    if getattr(env, 'env_file', None):
+    if getattr(env, "env_file", None):
         values = {
-            'server': env.roledefs['web'][0],
-            'locale_path': env.env_file,
-            'remote_path': env.get('remote_env_file', os.path.join(env.project_dir, '.env')),
-            'user': env.main_user,
+            "server": env.roledefs["web"][0],
+            "locale_path": env.env_file,
+            "remote_path": env.get(
+                "remote_env_file", os.path.join(env.project_dir, ".env")
+            ),
+            "user": env.main_user,
         }
-        local('ansible {server} --inventory {server}, '
-              '--module-name ansible.builtin.copy '
-              '--user {user} '
-              '--args "src={locale_path} dest={remote_path}"'
-              ''.format(**values))
+        local(
+            "ansible {server} --inventory {server}, "
+            "--module-name ansible.builtin.copy "
+            "--user {user} "
+            '--args "src={locale_path} dest={remote_path}"'
+            "".format(**values)
+        )

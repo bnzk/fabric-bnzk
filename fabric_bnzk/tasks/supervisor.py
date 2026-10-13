@@ -1,56 +1,56 @@
-from fabric.api import task, run, roles, env
+from fabric.api import env, roles, run, task
 from fabric.utils import puts
 
 
 @task
-@roles('web', 'db')
+@roles("web", "db")
 def create_supervisor_folders():
-    if getattr(env, 'is_supervisord', None):
-        run('mkdir --parents ~/supervisor/programs')
-        run('mkdir --parents ~/supervisor/logs')
+    if getattr(env, "is_supervisord", None):
+        run("mkdir --parents ~/supervisor/programs")
+        run("mkdir --parents ~/supervisor/logs")
 
 
 @task
-@roles('web')
+@roles("web")
 def copy_restart_supervisord():
     """
     install and restart supervisord
     """
-    if env.get('is_supervisord', None):
-        run('mkdir --parents ~/supervisor/programs')
-        run('mkdir --parents ~/supervisor/logs')
+    if env.get("is_supervisord", None):
+        run("mkdir --parents ~/supervisor/programs")
+        run("mkdir --parents ~/supervisor/logs")
         run(
-            'cp {project_dir}/deployment/supervisor/supervisord.conf'
-            ' ~/supervisor/.'.format(**env)
+            "cp {project_dir}/deployment/supervisor/supervisord.conf"
+            " ~/supervisor/.".format(**env)
         )
         run(
-            'cp {project_dir}/deployment/supervisor/supervisord.sh'
-            ' ~/init/.'.format(**env)
+            "cp {project_dir}/deployment/supervisor/supervisord.sh"
+            " ~/init/.".format(**env)
         )
-        run('chmod u+x $HOME/init/supervisord.sh')
+        run("chmod u+x $HOME/init/supervisord.sh")
 
         # programs
-        run('rm -f ~/supervisor/programs/*-{env_prefix}'.format(**env))
+        run("rm -f ~/supervisor/programs/*-{env_prefix}".format(**env))
         run(
-            'cp {project_dir}/deployment/supervisor/programs/*-{env_prefix}'
-            ' ~/supervisor/programs/.'.format(**env)
+            "cp {project_dir}/deployment/supervisor/programs/*-{env_prefix}"
+            " ~/supervisor/programs/.".format(**env)
         )
 
         # restart
-        run('~/init/supervisord.sh restart')
+        run("~/init/supervisord.sh restart")
         # run('supervisorctl -c ~/supervisor/supervisord.conf update')
-        run('supervisorctl -c ~/supervisor/supervisord.conf status')
+        run("supervisorctl -c ~/supervisor/supervisord.conf status")
     else:
-        puts('not deploying supervisord to %s!' % env.env_prefix)
+        puts("not deploying supervisord to %s!" % env.env_prefix)
 
 
 @task
-@roles('web')
+@roles("web")
 def supervisorctl(command):
     """
     control supervisord
     """
-    if env.get('is_supervisord', None):
-        run('supervisorctl -c ~/supervisor/supervisord.conf {}'.format(command))
+    if env.get("is_supervisord", None):
+        run("supervisorctl -c ~/supervisor/supervisord.conf {}".format(command))
     else:
-        puts('supervisord not deployed to %s!' % env.env_prefix)
+        puts("supervisord not deployed to %s!" % env.env_prefix)

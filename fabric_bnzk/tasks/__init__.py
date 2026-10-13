@@ -3,36 +3,56 @@ import sys
 from fabric.api import env
 
 from fabric_bnzk.tasks.bootstrap import (
-    bootstrap, create_virtualenv, clone_repos, create_custom_python
-)
-from fabric_bnzk.tasks.local import (
-    pip_init_upgrade, pip_compile
-)
-from fabric_bnzk.tasks.main_tasks import (
-    deploy, update, restart, put_env_file, build_put_webpack, stop_django, disable_django, crontab, migrate,
-    requirements, collectstatic, git_set_remote
+    bootstrap,
+    clone_repos,
+    create_custom_python,
+    create_virtualenv,
 )
 from fabric_bnzk.tasks.database import (
-    create_db, create_local_db, create_mycnf, get_db, put_db
+    create_db,
+    create_local_db,
+    create_mycnf,
+    get_db,
+    put_db,
 )
+from fabric_bnzk.tasks.glitchtip import setup_all_glitchtip_alerts, setup_glitchtip
 from fabric_bnzk.tasks.gunicorn import (
-    copy_restart_gunicorn, stop_gunicorn, disable_gunicorn
+    copy_restart_gunicorn,
+    disable_gunicorn,
+    stop_gunicorn,
 )
 from fabric_bnzk.tasks.helper_tasks import (
-    dj, version, shell, memory, put_media, get_media, virtualenv, fix_permissions
+    dj,
+    fix_permissions,
+    get_media,
+    memory,
+    put_media,
+    shell,
+    version,
+    virtualenv,
 )
-from fabric_bnzk.tasks.nginx import (
-    create_nginx_folders, copy_restart_nginx
+from fabric_bnzk.tasks.local import pip_compile, pip_init_upgrade
+from fabric_bnzk.tasks.main_tasks import (
+    build_put_webpack,
+    collectstatic,
+    crontab,
+    deploy,
+    disable_django,
+    git_set_remote,
+    migrate,
+    put_env_file,
+    requirements,
+    restart,
+    stop_django,
+    update,
 )
+from fabric_bnzk.tasks.nginx import copy_restart_nginx, create_nginx_folders
 from fabric_bnzk.tasks.supervisor import (
-    create_supervisor_folders, supervisorctl, copy_restart_supervisord
+    copy_restart_supervisord,
+    create_supervisor_folders,
+    supervisorctl,
 )
-from fabric_bnzk.tasks.uwsgi import (
-    copy_restart_uwsgi
-)
-from fabric_bnzk.tasks.glitchtip import (
-    setup_glitchtip, setup_all_glitchtip_alerts
-)
+from fabric_bnzk.tasks.uwsgi import copy_restart_uwsgi
 
 # hm. https://github.com/fabric/fabric/issues/256
 sys.path.insert(0, sys.path[0])
@@ -42,47 +62,54 @@ env.forward_agent = True
 
 
 __all__ = [
-    'bootstrap',
-    'pip_init_upgrade',
-    'pip_compile',
-    'create_virtualenv',
-    'create_custom_python',
-    'create_nginx_folders',
-    'create_supervisor_folders',
-    'clone_repos',
-    'create_db',
-    'create_local_db',
-    'create_mycnf',
-    'deploy',
-    'update', 'restart', 'put_env_file', 'build_put_webpack', 'stop_django', 'disable_django', 'crontab', 'migrate',
-    'requirements', 'collectstatic', 'git_set_remote',
-    'get_db',
-    'put_db',
-    'copy_restart_gunicorn',
-    'stop_gunicorn',
-    'disable_gunicorn',
-    'dj',
-    'version',
-    'shell',
-    'memory',
-    'get_media',
-    'put_media',
-    'virtualenv',
-    'fix_permissions',
-    'create_nginx_folders',
-    'copy_restart_nginx',
-    'create_supervisor_folders',
-    'supervisorctl',
-    'copy_restart_supervisord',
-    'copy_restart_uwsgi',
-    'setup_glitchtip',
-    'setup_all_glitchtip_alerts',
-
+    "bootstrap",
+    "pip_init_upgrade",
+    "pip_compile",
+    "create_virtualenv",
+    "create_custom_python",
+    "create_nginx_folders",
+    "create_supervisor_folders",
+    "clone_repos",
+    "create_db",
+    "create_local_db",
+    "create_mycnf",
+    "deploy",
+    "update",
+    "restart",
+    "put_env_file",
+    "build_put_webpack",
+    "stop_django",
+    "disable_django",
+    "crontab",
+    "migrate",
+    "requirements",
+    "collectstatic",
+    "git_set_remote",
+    "get_db",
+    "put_db",
+    "copy_restart_gunicorn",
+    "stop_gunicorn",
+    "disable_gunicorn",
+    "dj",
+    "version",
+    "shell",
+    "memory",
+    "get_media",
+    "put_media",
+    "virtualenv",
+    "fix_permissions",
+    "create_nginx_folders",
+    "copy_restart_nginx",
+    "create_supervisor_folders",
+    "supervisorctl",
+    "copy_restart_supervisord",
+    "copy_restart_uwsgi",
+    "setup_glitchtip",
+    "setup_all_glitchtip_alerts",
     # 'get_db_mysql',
     # 'put_db_mysql',
     # 'get_db_postgresql',
     # 'put_db_postgresql',
-
 ]
 
 # check for some defaults to be set?
