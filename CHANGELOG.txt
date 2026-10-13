@@ -1,5 +1,10 @@
 === (ongoing) ===
 
+
+=== 0.1.3 (2026-10-13) ==
+
+- glitchtip remote management: setup_glitchtip, setup_all_glitchtip_alerts
+- packaging moved from setup.py to pyproject.toml (hatchling)
 - run the gunicorn restart without pty. under a pty, the daemonized gunicorn was killed by SIGHUP when the ssh session closed, so it often did not come up after a deploy
 
 
