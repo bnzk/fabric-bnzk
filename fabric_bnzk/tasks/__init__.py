@@ -15,7 +15,6 @@ from fabric_bnzk.tasks.database import (
     get_db,
     put_db,
 )
-from fabric_bnzk.tasks.glitchtip import setup_all_glitchtip_alerts, setup_glitchtip
 from fabric_bnzk.tasks.gunicorn import (
     copy_restart_gunicorn,
     disable_gunicorn,
@@ -104,8 +103,6 @@ __all__ = [
     "supervisorctl",
     "copy_restart_supervisord",
     "copy_restart_uwsgi",
-    "setup_glitchtip",
-    "setup_all_glitchtip_alerts",
     # 'get_db_mysql',
     # 'put_db_mysql',
     # 'get_db_postgresql',
